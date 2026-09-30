@@ -1,98 +1,663 @@
-<!--
+<!DOCTYPE html> <html lang="en"> <head> <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 
-JS GameBoy Emulator v.1.0
-Copyright (C) 2013 Alejandro Aladrén <alex@alexaladren.net> 
+<title>JS GameBoy Emulator</title>
+<meta name="description" content="JS GameBoy Emulator">
+<meta name="author" content="Alex">
 
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
+<link rel="stylesheet" href="style.css">
 
-You should have received a copy of the GNU General Public License
-along with this program.  If not, see <http://www.gnu.org/licenses/>.
+<link rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0">
 
--->
-<!DOCTYPE html>
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
+<link rel="shortcut icon" href="/favicon.ico">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
 
-		<!-- Always force latest IE rendering engine (even in intranet) & Chrome Frame
-		Remove this if you use the .htaccess -->
-		<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+<script src="Z80.js"></script>
+<script src="GameBoy.js"></script>
+<script src="emulator.js"></script>
 
-		<title>JS GameBoy Emulator</title>
-		<meta name="description" content="" />
-		<meta name="author" content="Alex" />
+<style>
+    * {
+        box-sizing: border-box;
+    }
 
-		<meta name="viewport" content="width=device-width; initial-scale=1.0" />
+    html,
+    body {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        min-height: 100%;
+    }
 
-		<!-- Replace favicon.ico & apple-touch-icon.png in the root of your domain and delete these references -->
-		<link rel="stylesheet" href="style.css" />
-		<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@48,400,0,0" />
-		<link rel="shortcut icon" href="/favicon.ico" />
-		<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
-		
-		<script src="Z80.js"></script>
-		<script src="GameBoy.js"></script>
-		<script src="emulator.js"></script>
-	</head>
+    body {
+        background: #202020;
+        color: #eeeeee;
+        font-family: Arial, Helvetica, sans-serif;
 
-	<body>
-		<div id="wrapper">
-			<header>
-				<h1>JS GameBoy Emulator</h1>
-			</header>
+        /* Prevent accidental horizontal scrolling */
+        overflow-x: hidden;
+    }
 
-			<div class="left-column">
-				<div class="gb">
-					<div class="display">
-						<canvas id="display" width="160" height="144" style="width: 320px; height: 288px;"></canvas>
-						<div id="fps"></div>
-					</div>
-					<div class="controls">
-						<div id="key-up" class="material-symbols-outlined">arrow_upward</div>
-						<div id="key-down" class="material-symbols-outlined">arrow_downward</div>
-						<div id="key-left" class="material-symbols-outlined">arrow_back</div>
-						<div id="key-right" class="material-symbols-outlined">arrow_forward</div>
-						<div id="key-select">Q</div>
-						<div id="key-start">W</div>
-						<div id="key-a">S</div>
-						<div id="key-b">A</div>
-					</div>
-					<div class="emulator-controls">
-						<div id="pause-button" class="button material-symbols-outlined" onclick="pause()">pause</div>
-						<div>
-							<span class="material-symbols-outlined">volume_up</span>
-							<input type="range" min="0" max="100" value="20" step="1" oninput="gb.setAudioVolume(this.value / 100)">
-						</div>
-					</div>
-				</div>
-				
-				<div class="copyright">
-					<a href="http://www.alexaladren.net">Alejandro Aladr&eacute;n</a> |
-					<a href="mailto:alex@alexaladren.net">alex@alexaladren.net</a> | 
-					<a href="http://www.gnu.org/licenses/">GPL v.3</a> |
-					<a href="https://github.com/alexaladren/jsgameboy">GitHub</a>
-				</div>
-				
-			</div>
-			<div class="right-column">
-			
-				<div class="button" id="addfrompc" onclick="addROMfromComputer(event)">Add a ROM from your PC</div>
-				
-				<div id="cartridge-data" style="display: none;">
-					<div id="title" class="title"></div>
-					<div id="cartridge"></div>
-					<input type="button" id="delete" value="Delete save" onclick="deleteCartridgeRam()" style="display: none;" />
-				</div>
-				
-			</div>
-		</div>
-	</body>
-</html>
+    #wrapper {
+        width: 100%;
+        min-height: 100vh;
+
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+
+        gap: 50px;
+        padding: 35px;
+    }
+
+    /*
+     * LEFT SIDE
+     * Contains only the Game Boy/emulator.
+     */
+    .left-column {
+        flex: 0 1 auto;
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+        min-width: 0;
+    }
+
+    .gb {
+        width: min(430px, 90vw);
+
+        background: #c8c8c8;
+        border-radius: 18px 18px 45px 45px;
+
+        padding: 28px 25px 35px;
+
+        box-shadow:
+            0 15px 30px rgba(0, 0, 0, 0.45),
+            inset 0 2px 0 rgba(255, 255, 255, 0.4);
+
+        color: #222;
+    }
+
+    /*
+     * Emulator screen.
+     * The original canvas is 160x144, so this keeps
+     * the Game Boy's 10:9 display ratio.
+     */
+    .display {
+        position: relative;
+
+        width: 100%;
+        max-width: 380px;
+
+        margin: 0 auto 30px;
+
+        background: #182018;
+        border-radius: 8px;
+
+        padding: 18px;
+
+        box-shadow:
+            inset 0 4px 10px rgba(0, 0, 0, 0.6),
+            0 2px 4px rgba(0, 0, 0, 0.25);
+    }
+
+    #display {
+        display: block;
+
+        width: 100%;
+        height: auto;
+
+        aspect-ratio: 160 / 144;
+
+        image-rendering: pixelated;
+        image-rendering: crisp-edges;
+
+        background: #9bbc0f;
+    }
+
+    #fps {
+        position: absolute;
+
+        right: 22px;
+        top: 22px;
+
+        color: #fff;
+        font-size: 11px;
+
+        pointer-events: none;
+    }
+
+    /*
+     * Game Boy controls
+     */
+    .controls {
+        position: relative;
+
+        width: 100%;
+        height: 190px;
+
+        margin-top: 5px;
+    }
+
+    #key-up,
+    #key-down,
+    #key-left,
+    #key-right,
+    #key-select,
+    #key-start,
+    #key-a,
+    #key-b {
+        user-select: none;
+        -webkit-user-select: none;
+        touch-action: none;
+    }
+
+    /*
+     * D-pad
+     */
+    #key-up,
+    #key-down,
+    #key-left,
+    #key-right {
+        position: absolute;
+
+        width: 52px;
+        height: 52px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        background: #333;
+        color: white;
+
+        cursor: pointer;
+
+        box-shadow:
+            0 3px 0 #111,
+            inset 0 1px 2px rgba(255,255,255,0.15);
+    }
+
+    #key-up {
+        left: 47px;
+        top: 0;
+        border-radius: 6px 6px 2px 2px;
+    }
+
+    #key-down {
+        left: 47px;
+        top: 100px;
+        border-radius: 2px 2px 6px 6px;
+    }
+
+    #key-left {
+        left: 0;
+        top: 50px;
+        border-radius: 6px 2px 2px 6px;
+    }
+
+    #key-right {
+        left: 94px;
+        top: 50px;
+        border-radius: 2px 6px 6px 2px;
+    }
+
+    /*
+     * Select / Start
+     */
+    #key-select,
+    #key-start {
+        position: absolute;
+
+        width: 65px;
+        height: 22px;
+
+        background: #555;
+        color: white;
+
+        border-radius: 12px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        font-weight: bold;
+        font-size: 13px;
+
+        box-shadow: 0 3px 0 #222;
+
+        cursor: pointer;
+
+        transform: rotate(-25deg);
+    }
+
+    #key-select {
+        left: 170px;
+        top: 80px;
+    }
+
+    #key-start {
+        left: 245px;
+        top: 80px;
+    }
+
+    /*
+     * A / B buttons
+     */
+    #key-a,
+    #key-b {
+        position: absolute;
+
+        width: 58px;
+        height: 58px;
+
+        border-radius: 50%;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        background: #9b3150;
+        color: white;
+
+        font-size: 20px;
+        font-weight: bold;
+
+        box-shadow:
+            0 4px 0 #541728,
+            inset 0 2px 4px rgba(255,255,255,0.15);
+
+        cursor: pointer;
+    }
+
+    #key-a {
+        right: 15px;
+        top: 20px;
+    }
+
+    #key-b {
+        right: 85px;
+        top: 55px;
+    }
+
+    /*
+     * Pause and volume
+     */
+    .emulator-controls {
+        margin-top: 10px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        gap: 25px;
+
+        color: #333;
+    }
+
+    .emulator-controls .button {
+        cursor: pointer;
+        user-select: none;
+    }
+
+    .emulator-controls > div {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+    }
+
+    .emulator-controls input[type="range"] {
+        width: 100px;
+    }
+
+    /*
+     * RIGHT SIDE
+     * All text/UI information lives here.
+     */
+    .right-column {
+        width: min(430px, 90vw);
+
+        padding-top: 10px;
+    }
+
+    header {
+        margin-bottom: 30px;
+    }
+
+    header h1 {
+        margin: 0;
+
+        font-size: clamp(28px, 4vw, 42px);
+        line-height: 1.1;
+
+        color: #ffffff;
+    }
+
+    #addfrompc {
+        display: block;
+
+        width: 100%;
+
+        padding: 15px 20px;
+
+        background: #4c78d0;
+        color: white;
+
+        border-radius: 8px;
+
+        text-align: center;
+        font-weight: bold;
+
+        cursor: pointer;
+
+        transition:
+            background 0.15s ease,
+            transform 0.1s ease;
+    }
+
+    #addfrompc:hover {
+        background: #5c88e0;
+    }
+
+    #addfrompc:active {
+        transform: translateY(1px);
+    }
+
+    #cartridge-data {
+        margin-top: 20px;
+
+        padding: 20px;
+
+        background: #2d2d2d;
+
+        border-radius: 10px;
+
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.25);
+    }
+
+    #title {
+        font-size: 22px;
+        font-weight: bold;
+
+        margin-bottom: 10px;
+    }
+
+    #cartridge {
+        line-height: 1.5;
+    }
+
+    #delete {
+        margin-top: 15px;
+
+        padding: 8px 14px;
+
+        border: 0;
+        border-radius: 5px;
+
+        cursor: pointer;
+    }
+
+    /*
+     * Copyright / links
+     */
+    .copyright {
+        width: 100%;
+
+        margin-top: 30px;
+
+        color: #999;
+
+        font-size: 13px;
+        line-height: 1.7;
+    }
+
+    .copyright a {
+        color: #aaa;
+    }
+
+    .copyright a:hover {
+        color: white;
+    }
+
+    /*
+     * Make the layout stack on small screens.
+     */
+    @media (max-width: 850px) {
+        #wrapper {
+            flex-direction: column;
+            align-items: center;
+
+            gap: 25px;
+
+            padding: 20px;
+        }
+
+        .left-column {
+            width: 100%;
+        }
+
+        .right-column {
+            width: min(430px, 90vw);
+        }
+
+        header {
+            text-align: center;
+        }
+    }
+
+    /*
+     * Very small screens.
+     */
+    @media (max-width: 430px) {
+        #wrapper {
+            padding: 10px;
+        }
+
+        .gb {
+            width: 96vw;
+
+            padding-left: 15px;
+            padding-right: 15px;
+        }
+
+        .display {
+            padding: 10px;
+        }
+
+        .controls {
+            transform: scale(0.9);
+            transform-origin: top center;
+        }
+    }
+</style>
+
+<script>
+    /*
+     * Stop the browser from scrolling when the Game Boy
+     * directional keys are pressed.
+     */
+    document.addEventListener("keydown", function(event) {
+        const gameBoyKeys = [
+            "ArrowUp",
+            "ArrowDown",
+            "ArrowLeft",
+            "ArrowRight"
+        ];
+
+        if (gameBoyKeys.includes(event.key)) {
+            event.preventDefault();
+        }
+    }, { passive: false });
+
+    /*
+     * Also prevent scrolling when the arrow keys are released.
+     */
+    document.addEventListener("keyup", function(event) {
+        const gameBoyKeys = [
+            "ArrowUp",
+            "ArrowDown",
+            "ArrowLeft",
+            "ArrowRight"
+        ];
+
+        if (gameBoyKeys.includes(event.key)) {
+            event.preventDefault();
+        }
+    }, { passive: false });
+</script>
+
+</head> <body> <div id="wrapper">
+<!-- ========================================= -->
+<!-- LEFT: GAME BOY                            -->
+<!-- ========================================= -->
+
+<div class="left-column">
+
+    <div class="gb">
+
+        <div class="display">
+            <canvas
+                id="display"
+                width="160"
+                height="144">
+            </canvas>
+
+            <div id="fps"></div>
+        </div>
+
+        <div class="controls">
+
+            <div id="key-up"
+                 class="material-symbols-outlined">
+                arrow_upward
+            </div>
+
+            <div id="key-down"
+                 class="material-symbols-outlined">
+                arrow_downward
+            </div>
+
+            <div id="key-left"
+                 class="material-symbols-outlined">
+                arrow_back
+            </div>
+
+            <div id="key-right"
+                 class="material-symbols-outlined">
+                arrow_forward
+            </div>
+
+            <div id="key-select" style="position: relative; top: 150px; left: 150px;">Shift</div>
+        <div id="key-start" style="position: relative; top: 125px; left: 225px;">Enter</div>
+
+        <div id="key-a">Z</div>
+        <div id="key-b">X</div>
+
+        </div>
+
+        <div class="emulator-controls">
+
+            <div
+                id="pause-button"
+                class="button material-symbols-outlined"
+                onclick="pause()">
+                pause
+            </div>
+
+            <div>
+                <span class="material-symbols-outlined">
+                    volume_up
+                </span>
+
+                <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value="20"
+                    step="1"
+                    oninput="gb.setAudioVolume(this.value / 100)">
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- ========================================= -->
+<!-- RIGHT: INFORMATION / ROM CONTROLS         -->
+<!-- ========================================= -->
+
+<div class="right-column">
+
+    <header>
+        <h1>JS GameBoy Emulator</h1>
+    </header>
+
+    <div
+        class="button"
+        id="addfrompc"
+        onclick="addROMfromComputer(event)">
+        Add a ROM from your PC
+    </div>
+
+    <div
+        id="cartridge-data"
+        style="display: none;">
+
+        <div
+            id="title"
+            class="title">
+        </div>
+
+        <div id="cartridge"></div>
+
+        <input
+            type="button"
+            id="delete"
+            value="Delete save"
+            onclick="deleteCartridgeRam()"
+            style="display: none;">
+
+    </div>
+
+    <div class="copyright">
+
+        <a href="http://www.alexaladren.net">
+            Alejandro Aladr&eacute;n
+        </a>
+
+        |
+
+        <a href="mailto:alex@alexaladren.net">
+            alex@alexaladren.net
+        </a>
+
+        |
+
+        <a href="http://www.gnu.org/licenses/">
+            GPL v.3
+        </a>
+
+        |
+
+        <a href="https://github.com/alexaladren/jsgameboy">
+            GitHub
+        </a>
+
+        |
+
+        <a href="https://github.com/Clippy-CLI">
+            Modified for you by Clippy-CLI (Github)
+        </a>
+
+    </div>
+
+</div>
+
+</div> </body> </html>
