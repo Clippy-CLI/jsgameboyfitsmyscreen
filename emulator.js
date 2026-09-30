@@ -121,12 +121,12 @@ function keyPress(ev){
    }else if(ev.keyCode == 40){ // Down
       gb.keyPressed(8);
       document.getElementById("key-down").classList.add('pressed');
-   }else if(ev.keyCode == 88){ // X - B button
-      gb.keyPressed(32);
-      document.getElementById("key-b").classList.add('pressed');
-   }else if(ev.keyCode == 90){ // Z - A button
+   }else if(ev.keyCode == 88){ // X - A button
       gb.keyPressed(16);
       document.getElementById("key-a").classList.add('pressed');
+   }else if(ev.keyCode == 90){ // Z - B button
+      gb.keyPressed(32);
+      document.getElementById("key-b").classList.add('pressed');
    }else if(ev.keyCode == 13){ // Enter - Start
       gb.keyPressed(128);
       document.getElementById("key-start").classList.add('pressed');
@@ -149,12 +149,12 @@ function keyRelease(ev){
    }else if(ev.keyCode == 40){ // Down
       gb.keyReleased(8);
       document.getElementById("key-down").classList.remove('pressed');
-   }else if(ev.keyCode == 88){ // X - B button
-      gb.keyReleased(32);
-      document.getElementById("key-b").classList.remove('pressed');
-   }else if(ev.keyCode == 90){ // Z - A button
+   }else if(ev.keyCode == 88){ // X - A button
       gb.keyReleased(16);
       document.getElementById("key-a").classList.remove('pressed');
+   }else if(ev.keyCode == 90){ // Z - B button
+      gb.keyReleased(32);
+      document.getElementById("key-b").classList.remove('pressed');
    }else if(ev.keyCode == 13){ // Enter - Start
       gb.keyReleased(128);
       document.getElementById("key-start").classList.remove('pressed');
