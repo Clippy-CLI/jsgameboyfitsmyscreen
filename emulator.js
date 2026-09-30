@@ -109,56 +109,56 @@ function pause(){
 }
 
 function keyPress(ev){
-   if(ev.keyCode == 37){ // Izquierda
+   if(ev.keyCode == 37){ // Left
       gb.keyPressed(2);
       document.getElementById("key-left").classList.add('pressed');
-   }else if(ev.keyCode == 38){ // Arriba
+   }else if(ev.keyCode == 38){ // Up
       gb.keyPressed(4);
       document.getElementById("key-up").classList.add('pressed');
-   }else if(ev.keyCode == 39){ // Derecha
+   }else if(ev.keyCode == 39){ // Right
       gb.keyPressed(1);
       document.getElementById("key-right").classList.add('pressed');
-   }else if(ev.keyCode == 40){ // Abajo
+   }else if(ev.keyCode == 40){ // Down
       gb.keyPressed(8);
       document.getElementById("key-down").classList.add('pressed');
-   }else if(ev.keyCode == 65){ // B
+   }else if(ev.keyCode == 88){ // X - B button
       gb.keyPressed(32);
       document.getElementById("key-b").classList.add('pressed');
-   }else if(ev.keyCode == 83){ // A
+   }else if(ev.keyCode == 90){ // Z - A button
       gb.keyPressed(16);
       document.getElementById("key-a").classList.add('pressed');
-   }else if(ev.keyCode == 87){ // Start
+   }else if(ev.keyCode == 13){ // Enter - Start
       gb.keyPressed(128);
       document.getElementById("key-start").classList.add('pressed');
-   }else if(ev.keyCode == 81){ // Select
+   }else if(ev.keyCode == 16){ // Shift - Select
       gb.keyPressed(64);
       document.getElementById("key-select").classList.add('pressed');
    }
 }
 
 function keyRelease(ev){
-   if(ev.keyCode == 37){ // Izquierda
+   if(ev.keyCode == 37){ // Left
       gb.keyReleased(2);
       document.getElementById("key-left").classList.remove('pressed');
-   }else if(ev.keyCode == 38){ // Arriba
+   }else if(ev.keyCode == 38){ // Up
       gb.keyReleased(4);
       document.getElementById("key-up").classList.remove('pressed');
-   }else if(ev.keyCode == 39){ // Derecha
+   }else if(ev.keyCode == 39){ // Right
       gb.keyReleased(1);
       document.getElementById("key-right").classList.remove('pressed');
-   }else if(ev.keyCode == 40){ // Abajo
+   }else if(ev.keyCode == 40){ // Down
       gb.keyReleased(8);
       document.getElementById("key-down").classList.remove('pressed');
-   }else if(ev.keyCode == 65){ // B
+   }else if(ev.keyCode == 88){ // X - B button
       gb.keyReleased(32);
       document.getElementById("key-b").classList.remove('pressed');
-   }else if(ev.keyCode == 83){ // A
+   }else if(ev.keyCode == 90){ // Z - A button
       gb.keyReleased(16);
       document.getElementById("key-a").classList.remove('pressed');
-   }else if(ev.keyCode == 87){ // Start
+   }else if(ev.keyCode == 13){ // Enter - Start
       gb.keyReleased(128);
       document.getElementById("key-start").classList.remove('pressed');
-   }else if(ev.keyCode == 81){ // Select
+   }else if(ev.keyCode == 16){ // Shift - Select
       gb.keyReleased(64);
       document.getElementById("key-select").classList.remove('pressed');
    }
