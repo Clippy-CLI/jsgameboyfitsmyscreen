@@ -1,0 +1,3 @@
+1. Change the Gui more from the ugly one when i was really lazy and had copilot swap the button text
+2. Maybe add support for gbc or gameboycolor games that can run on gameboy
+3. 
